@@ -128,15 +128,31 @@ foreach ($pluginSettings as $key => $value) {
             <div class="justify-content-md-center row pb-5">
               <div class="col-md-6">
                 <div class="card-title h5">
-                  Fieldgoal Sequence
+                  Field Goal Sequence
                 </div>
                 <div class="mb-2 text-muted small h6">
-                  Select the sequence to play on a fieldgoal<br>Select no sequence to disable
+                  Select the sequence to play on a field goal<br>Select no sequence to disable
                 </div>
               </div>
               <div class="col-md-6">            
                   <div class="input-group">
                     <? PrintSettingSelect($league . "FieldgoalSequence", $league . "FieldgoalSequence", 0, 0, $defaultValue="", getSequences(), $pluginName, $callbackName = "", $changedFunction = ""); ?>                
+                  </div>           
+              </div>
+            </div>
+	    <!-- Safety Sequence -->
+            <div class="justify-content-md-center row pb-5">
+              <div class="col-md-6">
+                <div class="card-title h5">
+                  Safety Sequence
+                </div>
+                <div class="mb-2 text-muted small h6">
+                  Select the sequence to play on a safety<br>Select no sequence to disable
+                </div>
+              </div>
+              <div class="col-md-6">            
+                  <div class="input-group">
+                    <? PrintSettingSelect($league . "SafetySequence", $league . "SafetySequence", 0, 0, $defaultValue="", getSequences(), $pluginName, $callbackName = "", $changedFunction = ""); ?>                
                   </div>           
               </div>
             </div>
