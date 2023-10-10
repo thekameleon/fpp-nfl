@@ -211,6 +211,7 @@ function getGameStatus($sport, $league, $gameID, $teamID) {
 	//get score
 	$gameStatus['myScore'] = $game['competitions'][0]['competitors'][$teamIndex]['score'];
 	$gameStatus['oppoScore'] = $game['competitions'][0]['competitors'][$oppoIndex]['score'];
+	$gameStatus['clock'] = $game['status']['clock']
 
 	return $gameStatus;
 
@@ -323,6 +324,21 @@ function updateTeamStatus($reparseSettings=true){
 			} else {
 				${$league . "FieldgoalSequence"}="";
 			}
+			if (strlen(urldecode($pluginSettings["{$league}SafetySequence"]))>1){
+				${$league . "SafetySequence"}=urldecode($pluginSettings["{$league}SafetySequence"]);
+			} else {
+				${$league . "SafetySequence"}="";
+			}
+			if (strlen(urldecode($pluginSettings["{$league}PreTouchdown"]))>1){
+				${$league . "PreTouchdown"}=urldecode($pluginSettings["{$league}PreTouchdown"]);
+			} else {
+				${$league . "PreTouchdown"}=false;
+			}
+			if (strlen(urldecode($pluginSettings["{$league}ClockAtScore"]))>1){
+				${$league . "ClockAtScore"}=urldecode($pluginSettings["{$league}ClockAtScore"]);
+			} else {
+				${$league . "ClockAtScore"}=0.0;
+			}
 
 			$sport = "football";
 	
@@ -411,13 +427,13 @@ function updateTeamStatus($reparseSettings=true){
 				if ($sport == "football") {
 
 					if (${$league . "MyScore"} + 6 == $status['myScore']) {
-						//play touchdown sequence if set
-						if (${$league . "TouchdownSequence"} != '') {
-							insertPlaylistImmediate(${$league . "TouchdownSequence"});
-							logEntry("{$league} Touchdown! Playing sequence.");					
-						} else {
-							logEntry("{$league} Touchdown Triggered but no sequence selected");
-						}
+						// A touchdown occurred but we don't want to play until we know for sure that the touchdown is good. The clock should not run on a touchdown point after a conversion
+						if($preTouchdown == false) {
+							WriteSettingToFile("{$league}MyScore",0,$pluginName);
+							${$league . "PreTouchdown"} = true;
+							${$league . "ClockAtScore"} = $status['clock'];
+							logEntry("{$league} Pre-touchdown.");
+						} 
 					} elseif (${$league . "MyScore"} + 3 == $status['myScore']) {
 						//play fieldgoal sequence if set
 						if (${$league . "FieldgoalSequence"} != '') {
@@ -425,6 +441,41 @@ function updateTeamStatus($reparseSettings=true){
 							logEntry("{$league} Fieldgoal! Playing sequence.");					
 						} else {
 							logEntry("{$league} Fieldgoal Triggered but no sequence selected");
+						}
+					} elseif (${$league . "MyScore"} + 2 == $status['myScore']) {
+						//play safety sequence if set
+						if (${$league . "SafetySequence"} != '') {
+							insertPlaylistImmediate(${$league . "SafetySequence"});
+							logEntry("{$league} Safety! Playing sequence.");					
+						} else {
+							logEntry("{$league} Safety Triggered but no sequence selected");
+						}
+					} elseif (${$league . "PreTouchdown"} == true ) {
+						if (${$league . "ClockAtScore"} == $status['clock'] && (${$league . "MyScore"} + 2 || ${$league . "MyScore"} + 1) ) {
+							//play touchdown sequence if set
+							if (${$league . "TouchdownSequence"} != '') {
+								insertPlaylistImmediate(${$league . "TouchdownSequence"});
+								logEntry("{$league} Touchdown! Playing sequence.");					
+							} else {
+								logEntry("{$league} Touchdown Triggered but no sequence selected");
+							}
+							${$league . "ClockAtScore"} = 0.0;
+							${$league . "PreTouchdown"} = false;
+						} elseif ((${$league . "ClockAtScore"} < $status['clock']) {
+							// Something happened. Either a reversal or missed extra points
+							if (${$league . "MyScore"} - 6 != $status['myScore']) {
+								//Missed point, go ahead and play it
+								if (${$league . "TouchdownSequence"} != '') {
+									insertPlaylistImmediate(${$league . "TouchdownSequence"});
+									logEntry("{$league} Touchdown! (No after point) Playing sequence");					
+								} else {
+									logEntry("{$league} Touchdown Triggered but no sequence selected. (No after point) ");
+								}
+							} else {
+							  	logEntry("{$league} Touchdown reversed ");
+							}
+							${$league . "ClockAtScore"} = 0.0;
+							${$league . "PreTouchdown"} = false;
 						}
 					}
 
