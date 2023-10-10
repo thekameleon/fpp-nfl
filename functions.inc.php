@@ -425,8 +425,34 @@ function updateTeamStatus($reparseSettings=true){
 
 				//check score changes
 				if ($sport == "football") {
-
-					if (${$league . "MyScore"} + 6 == $status['myScore']) {
+                    if (${$league . "PreTouchdown"} == true ) {
+						if (${$league . "ClockAtScore"} == $status['clock'] && (${$league . "MyScore"} + 2 || ${$league . "MyScore"} + 1) ) {
+							//play touchdown sequence if set
+							if (${$league . "TouchdownSequence"} != '') {
+								insertPlaylistImmediate(${$league . "TouchdownSequence"});
+								logEntry("{$league} Touchdown! Playing sequence.");					
+							} else {
+								logEntry("{$league} Touchdown Triggered but no sequence selected");
+							}
+							${$league . "ClockAtScore"} = 0.0;
+							${$league . "PreTouchdown"} = false;
+						} elseif (${$league . "ClockAtScore"} < $status['clock']) {
+							// Something happened. Either a reversal or missed extra points
+							if (${$league . "MyScore"} - 6 != $status['myScore']) {
+								//Missed point, go ahead and play it
+								if (${$league . "TouchdownSequence"} != '') {
+									insertPlaylistImmediate(${$league . "TouchdownSequence"});
+									logEntry("{$league} Touchdown! (No after point) Playing sequence");					
+								} else {
+									logEntry("{$league} Touchdown Triggered but no sequence selected. (No after point) ");
+								}
+							} else {
+							  	logEntry("{$league} Touchdown reversed ");
+							}
+							${$league . "ClockAtScore"} = 0.0;
+							${$league . "PreTouchdown"} = false;
+						}
+					} elseif (${$league . "MyScore"} + 6 == $status['myScore']) {
 						// A touchdown occurred but we don't want to play until we know for sure that the touchdown is good. The clock should not run on a touchdown point after a conversion
 						if($preTouchdown == false) {
 							WriteSettingToFile("{$league}MyScore",0,$pluginName);
@@ -450,34 +476,7 @@ function updateTeamStatus($reparseSettings=true){
 						} else {
 							logEntry("{$league} Safety Triggered but no sequence selected");
 						}
-					} elseif (${$league . "PreTouchdown"} == true ) {
-						if (${$league . "ClockAtScore"} == $status['clock'] && (${$league . "MyScore"} + 2 || ${$league . "MyScore"} + 1) ) {
-							//play touchdown sequence if set
-							if (${$league . "TouchdownSequence"} != '') {
-								insertPlaylistImmediate(${$league . "TouchdownSequence"});
-								logEntry("{$league} Touchdown! Playing sequence.");					
-							} else {
-								logEntry("{$league} Touchdown Triggered but no sequence selected");
-							}
-							${$league . "ClockAtScore"} = 0.0;
-							${$league . "PreTouchdown"} = false;
-						} elseif ((${$league . "ClockAtScore"} < $status['clock']) {
-							// Something happened. Either a reversal or missed extra points
-							if (${$league . "MyScore"} - 6 != $status['myScore']) {
-								//Missed point, go ahead and play it
-								if (${$league . "TouchdownSequence"} != '') {
-									insertPlaylistImmediate(${$league . "TouchdownSequence"});
-									logEntry("{$league} Touchdown! (No after point) Playing sequence");					
-								} else {
-									logEntry("{$league} Touchdown Triggered but no sequence selected. (No after point) ");
-								}
-							} else {
-							  	logEntry("{$league} Touchdown reversed ");
-							}
-							${$league . "ClockAtScore"} = 0.0;
-							${$league . "PreTouchdown"} = false;
-						}
-					}
+					} 
 
 				} elseif ($sport == "hockey" || $sport == "baseball") {
 					if (${$league . "MyScore"} < $status['myScore']) {
