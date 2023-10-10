@@ -52,6 +52,9 @@ foreach (array('nfl', 'ncaa', 'nhl', 'mlb') as $league) {
 	  if (strlen(urldecode($pluginSettings["${league}FieldgoalSequence"]))<1){
 		WriteSettingToFile("${league}FieldgoalSequence",urlencode(""),$pluginName);
 	  }
+	  if (strlen(urldecode($pluginSettings["${league}SafetySequence"]))<1){
+		WriteSettingToFile("${league}SafetySequence",urlencode(""),$pluginName);
+	  }
   
 	} elseif ($league == "nhl" || $league == "mlb") {
   
