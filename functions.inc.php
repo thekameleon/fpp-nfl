@@ -211,7 +211,7 @@ function getGameStatus($sport, $league, $gameID, $teamID) {
 	//get score
 	$gameStatus['myScore'] = $game['competitions'][0]['competitors'][$teamIndex]['score'];
 	$gameStatus['oppoScore'] = $game['competitions'][0]['competitors'][$oppoIndex]['score'];
-	$gameStatus['clock'] = $game['status']['clock']
+	$gameStatus['clock'] = $game['status']['clock'];
 
 	return $gameStatus;
 
@@ -425,7 +425,7 @@ function updateTeamStatus($reparseSettings=true){
 
 				//check score changes
 				if ($sport == "football") {
-                    if (${$league . "PreTouchdown"} == true ) {
+                   			 if (${$league . "PreTouchdown"} == true ) {
 						if (${$league . "ClockAtScore"} == $status['clock'] && (${$league . "MyScore"} + 2 || ${$league . "MyScore"} + 1) ) {
 							//play touchdown sequence if set
 							if (${$league . "TouchdownSequence"} != '') {
